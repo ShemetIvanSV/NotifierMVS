@@ -5,9 +5,12 @@ using Telegram.Bot.Types.Enums;
 
 namespace Notifier.Core.Commands
 {
-    class GetIdCommand : Command
+    /// <summary>
+    /// Комманда подписки на получение сообщений
+    /// </summary>
+    class StartCommand : Command
     {
-        public GetIdCommand()
+        public StartCommand()
         {
             Name = "/start";
         }
@@ -18,9 +21,7 @@ namespace Notifier.Core.Commands
 
             var chatType = message?.Chat?.Type;
 
-            var repository = new RecipientRepository();
-
-            var recipientsId = RecipientRepository.Recipients.Select(x=>x.Id);
+            var recipientsId = RecipientManager.Recipients.Select(x=>x.Id);
 
             foreach (var id in recipientsId)
             {
@@ -32,11 +33,11 @@ namespace Notifier.Core.Commands
 
             if (chatType == ChatType.Group)
             {
-                repository.Add(new Group(message.Chat.Title, chatId.ToString()));
+                RecipientManager.Add(new Group(message.Chat.Title, chatId.ToString()));
             }
             if (chatType == ChatType.Private)
             {
-                repository.Add(new Person(message.Chat.Username, chatId.ToString()));
+                RecipientManager.Add(new Person(message.Chat.Username, chatId.ToString()));
             }
         }
     }

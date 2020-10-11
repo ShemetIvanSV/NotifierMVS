@@ -1,5 +1,4 @@
-﻿using Notifier.Core;
-using Notifier.Forms;
+﻿using Notifier.Forms;
 using Notifier.Models;
 using Notifier.Presenters;
 using System;
@@ -11,17 +10,22 @@ namespace Notifier
 {
     public partial class MainForm : Form, ISenderView
     {
-        public event Action SendChanged;
+        public event EventHandler<MessageEventArgs> SendMessageChanged;
 
-        public IEnumerable<object> CheckedRecipients { get => GetCheckedRecipients(); }
-
-        public string Message { get => textBoxMessage.Text; }
+        public IEnumerable<string> CheckedRecipients { get => GetCheckedRecipients(); }
 
         public MainForm()
         {
             InitializeComponent();
+
+            //Инициализация презентера
+            var presenterSender = new PresenterSender(this);
         }
 
+        /// <summary>
+        /// Обновление списков получателей
+        /// </summary>
+        /// <param name="recipients">Новый список получателей</param>
         public void UpdateRecipientList(IEnumerable<Recipient> recipients)
         {
             checkedListBoxGroups.Items.Clear();
@@ -40,22 +44,30 @@ namespace Notifier
             }
         }
 
-        private IEnumerable<object> GetCheckedRecipients()
+        /// <summary>
+        /// Вернуть выбранных пользователем получателей
+        /// </summary>
+        /// <returns>Выбранные получатели</returns>
+        private IEnumerable<string> GetCheckedRecipients()
         {
-            var result = new List<object>();
+            var result = new List<string>();
 
-            foreach (var item in checkedListBoxGroups.CheckedItems)
+            foreach (var selectedGroup in checkedListBoxGroups.CheckedItems)
             {
-                result.Add(item);
+                result.Add(selectedGroup.ToString());
             }
 
-            foreach (var item in checkedListBoxPersons.CheckedItems)
+            foreach (var selectedPerson in checkedListBoxPersons.CheckedItems)
             {
-                result.Add(item);
+                result.Add(selectedPerson.ToString());
             }
+
             return result;
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки отправки сообщения
+        /// </summary>
         private void ButtonSend_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(textBoxMessage.Text))
@@ -69,26 +81,12 @@ namespace Notifier
 
             try
             {
-                SendChanged?.Invoke();
+                SendMessageChanged?.Invoke(this, new MessageEventArgs(textBoxMessage.Text));
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error", $"{ex.Message}");
             }
-        }
-
-        private async void MainForm_Load(object sender, EventArgs e)
-        {
-            var repository = new RecipientRepository();
-            var presenterSender = new PresenterSender(repository, this);
-            RecipientRepository.RecipientsChanged += Repository_RecipientsChanged;
-            //Вызов комманд
-            await TelegramBot.CommandWorker();
-        }
-
-        private void Repository_RecipientsChanged(object sender, RecipientsEventArgs e)
-        {
-            UpdateRecipientList(e.Recipients);
         }
     }
 }

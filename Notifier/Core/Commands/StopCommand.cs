@@ -5,10 +5,12 @@ using Telegram.Bot.Types.Enums;
 
 namespace Notifier.Core.Commands
 {
-    class UnsubscribleCommand : Command
+    /// <summary>
+    /// Комманда остановки подписки на получение сообщений
+    /// </summary>
+    class StopCommand : Command
     {
-
-        public UnsubscribleCommand()
+        public StopCommand()
         {
             Name = "/stop";
         }
@@ -19,9 +21,7 @@ namespace Notifier.Core.Commands
 
             var chatType = message?.Chat?.Type;
 
-            var repository = new RecipientRepository();
-
-            var recipientsId = RecipientRepository.Recipients.Select(x => x.Id)
+            var recipientsId = RecipientManager.Recipients.Select(x => x.Id)
                                                              .Where(x => x == chatId.ToString());
 
             if(!recipientsId.Any())
@@ -34,14 +34,14 @@ namespace Notifier.Core.Commands
                 if (message.Chat.Title == null)
                     return;
 
-                repository.Remove(message.Chat.Title);
+                RecipientManager.Remove(message.Chat.Title);
             }
             if (chatType == ChatType.Private)
             {
                 if (message.Chat.Username == null)
                     return;
 
-                repository.Remove(message.Chat.Username);
+                RecipientManager.Remove(message.Chat.Username);
             }
         }
     }

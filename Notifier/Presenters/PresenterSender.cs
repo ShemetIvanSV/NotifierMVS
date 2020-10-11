@@ -3,37 +3,40 @@ using Notifier.Forms;
 using Notifier.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace Notifier.Presenters
 {
     public class PresenterSender
     {
-        private ISenderView _view;
-        private IRecipientRepository _recipientRepository;
+        private readonly ISenderView _view;
 
-        public PresenterSender(IRecipientRepository recipientRepository, ISenderView view)
+        public PresenterSender(ISenderView view)
         {
             _view = view;
-            _view.SendChanged += ()=> SendMessage();
-            _recipientRepository = recipientRepository;
-            _view.UpdateRecipientList(RecipientRepository.Recipients);
+            _view.SendMessageChanged += View_SendMessageChanged;
+            _view.UpdateRecipientList(RecipientManager.Recipients);
+            RecipientManager.RecipientsChanged += Repository_RecipientsChanged;
         }
 
-        private async void SendMessage()
+        private async void View_SendMessageChanged(object sender, MessageEventArgs e)
         {
             var listId = new List<string>();
 
             foreach (var resipientName in _view.CheckedRecipients)
             {
-                listId.Add(RecipientRepository.Recipients.Where(c => c.Name == resipientName.ToString())
+                listId.Add(RecipientManager.Recipients.Where(c => c.Name == resipientName.ToString())
                                 .Select(s => s.Id).FirstOrDefault());
             }
 
             foreach (var id in listId)
             {
-                await TelegramBot.SendMessage(_view.Message, id);
+                await TelegramBot.SendMessage(e.Message, id);
             }
+        }
+
+        private void Repository_RecipientsChanged(object sender, RecipientsEventArgs e)
+        {
+            _view.UpdateRecipientList(e.Recipients);
         }
     }
 }

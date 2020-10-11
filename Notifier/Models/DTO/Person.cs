@@ -3,7 +3,7 @@
 namespace Notifier.Models
 {
     /// <summary>
-    /// Тип получателя - приват
+    /// Тип получателя - человек
     /// </summary>
     [Serializable]
     class Person : Recipient

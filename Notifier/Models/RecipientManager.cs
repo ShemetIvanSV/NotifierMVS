@@ -7,26 +7,19 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace Notifier.Models
 {
     /// <summary>
-    /// Репозиторий получателей
+    /// Менеджер работы с получателями
     /// </summary>
-    public class RecipientRepository : IRecipientRepository
+    public static class RecipientManager 
     {
         /// <summary>
         /// Сериализатор
         /// </summary>
-        private BinaryFormatter _formatter;
-
-        public static event EventHandler<RecipientsEventArgs> RecipientsChanged;
+        private static readonly BinaryFormatter _formatter;
 
         /// <summary>
-        /// Инициализация репозитория получателей
+        /// Событие изменения коллекции доступных получателей
         /// </summary>
-        public RecipientRepository()
-        {
-            Recipients = new List<Recipient>();
-            _formatter = new BinaryFormatter();
-            Select();
-        }
+        public static event EventHandler<RecipientsEventArgs> RecipientsChanged;
 
         /// <summary>
         /// Список получателей
@@ -34,10 +27,20 @@ namespace Notifier.Models
         public static IList<Recipient> Recipients { get; private set; }
 
         /// <summary>
+        /// Инициализация списка получателей
+        /// </summary>
+        static RecipientManager()
+        {
+            Recipients = new List<Recipient>();
+            _formatter = new BinaryFormatter();
+            Select();
+        }
+
+        /// <summary>
         /// Удаление получателя по названию
         /// </summary>
         /// <param name="name">Наименование получателя для удаления</param>
-        public void Remove(string name)
+        public static void Remove(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException("Получатель для удаления отсутствует", nameof(name));
@@ -53,7 +56,7 @@ namespace Notifier.Models
         /// Добавление получателя
         /// </summary>
         /// <param name="recipient">Выбранный получатель</param>
-        public void Add(Recipient recipient)
+        public static void Add(Recipient recipient)
         {
             var isNotRepeatName = Recipients.All(s => s.Name != recipient.Name);
 
@@ -68,7 +71,7 @@ namespace Notifier.Models
         /// <summary>
         /// Сохранение изменений
         /// </summary>
-        public void Save()
+        private static void Save()
         {
             var isRepeatName = Recipients.GroupBy(x => x.Name).Any(g => g.Count() > 1);
 
@@ -80,13 +83,13 @@ namespace Notifier.Models
                 _formatter.Serialize(stream, Recipients);
             }
 
-            RecipientsChanged?.Invoke(this, new RecipientsEventArgs(Recipients));
+            RecipientsChanged?.Invoke(null, new RecipientsEventArgs(Recipients));
         }
 
         /// <summary>
-        /// Выборка всех каналов
+        /// Выборка
         /// </summary>
-        private void Select()
+        private static void Select()
         {
             using (Stream stream = new FileStream("Recipient.dat", FileMode.OpenOrCreate))
             {

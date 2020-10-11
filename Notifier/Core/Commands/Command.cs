@@ -2,6 +2,9 @@
 
 namespace Notifier.Core.Commands
 {
+    /// <summary>
+    /// Комманды телеграм бота
+    /// </summary>
     public abstract class Command
     {
         public string Name { get; set; }
