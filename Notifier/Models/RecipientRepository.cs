@@ -16,6 +16,8 @@ namespace Notifier.Models
         /// </summary>
         private BinaryFormatter _formatter;
 
+        public static event EventHandler<RecipientsEventArgs> RecipientsChanged;
+
         /// <summary>
         /// Инициализация репозитория получателей
         /// </summary>
@@ -29,7 +31,7 @@ namespace Notifier.Models
         /// <summary>
         /// Список получателей
         /// </summary>
-        public List<Recipient> Recipients { get; private set; }
+        public static IList<Recipient> Recipients { get; private set; }
 
         /// <summary>
         /// Удаление получателя по названию
@@ -40,7 +42,9 @@ namespace Notifier.Models
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException("Получатель для удаления отсутствует", nameof(name));
 
-            Recipients.RemoveAll(s => s.Name == name);
+            var deleteItem = Recipients.Where(x => x.Name == name).First();
+
+            Recipients.Remove(deleteItem);
             Save();
             Select();
         }
@@ -75,6 +79,8 @@ namespace Notifier.Models
             {
                 _formatter.Serialize(stream, Recipients);
             }
+
+            RecipientsChanged?.Invoke(this, new RecipientsEventArgs(Recipients));
         }
 
         /// <summary>

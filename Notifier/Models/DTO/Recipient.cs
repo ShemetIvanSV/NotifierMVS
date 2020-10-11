@@ -14,19 +14,19 @@ namespace Notifier.Models
         
         public Recipient() { }
 
-        public Recipient(string channelName, string connectionString)
+        public Recipient(string name, string id)
         {
-            if (string.IsNullOrWhiteSpace(channelName))
+            if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("Наименование получателя не указано", nameof(channelName));
+                throw new ArgumentNullException("Наименование получателя не указано");
             }
-            if (string.IsNullOrWhiteSpace(connectionString))
+            if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentNullException("Id получателя не указан", nameof(connectionString));
+                throw new ArgumentNullException("Id получателя не указан");
             }
 
-            Name = channelName;
-            Id = connectionString;
+            Name = name;
+            Id = id;
         }
     }
 }

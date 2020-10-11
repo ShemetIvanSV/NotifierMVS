@@ -17,6 +17,12 @@ namespace Notifier
             _view.RemoveChanged += () => RemoveRecipient();
 
             _view.Update(_recipientRepository.Recipients);
+            _recipientRepository.RecipientsChanged += _recipientRepository_RecipientsChanged;
+        }
+
+        private void _recipientRepository_RecipientsChanged(object sender, RecipientsEventArgs e)
+        {
+            _view.Update(e.Recipients);
         }
 
         private void AddRecipient()
@@ -34,7 +40,7 @@ namespace Notifier
             }
             else if (_view.IsCreatePhone)
             {
-                _recipientRepository.Add(new Phone(name, id));
+                _recipientRepository.Add(new Person(name, id));
             }
             else
             {

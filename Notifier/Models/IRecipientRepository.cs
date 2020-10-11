@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Notifier.Models
 {
@@ -7,11 +8,6 @@ namespace Notifier.Models
     /// </summary>
     public interface IRecipientRepository
     {
-        /// <summary>
-        /// Список получателей
-        /// </summary>
-        List<Recipient> Recipients { get; }
-
         /// <summary>
         /// Добавление получателя
         /// </summary>

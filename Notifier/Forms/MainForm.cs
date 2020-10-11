@@ -1,98 +1,58 @@
-﻿using Notifier.Forms;
+﻿using Notifier.Core;
+using Notifier.Forms;
 using Notifier.Models;
 using Notifier.Presenters;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-//-1001123077637
+
 namespace Notifier
 {
-    public partial class MainForm : Form, IRecipientView, ISenderView
+    public partial class MainForm : Form, ISenderView
     {
-        public event Action AddChanged;
-        public event Action RemoveChanged;
         public event Action SendChanged;
 
-        public IEnumerable SelectedRows { get => dataGridView.SelectedRows; }
         public IEnumerable<object> CheckedRecipients { get => GetCheckedRecipients(); }
+
         public string Message { get => textBoxMessage.Text; }
-        public string Id { get => textBoxChannelId.Text; }
-        public string RecipientName { get => textBoxChannelName.Text; }
-        public bool IsCreateChannel { get => radioButtonCreateChannel.Checked; }
-        public bool IsCreateGroup { get => radioButtonCreateGroup.Checked; }
-        public bool IsCreatePhone { get => radioButtonCreatePhone.Checked; }
-
-        public void Update(IEnumerable<Recipient> recipients)
-        {
-            dataGridView.DataSource = recipients;
-
-            checkedListBoxChannel.Items.Clear();
-            checkedListBoxGroups.Items.Clear();
-            checkedListBoxPhones.Items.Clear();
-
-            foreach (var recipient in recipients)
-            {
-                if(recipient is Group groupRecipient)
-                {
-                    checkedListBoxGroups.Items.Add(groupRecipient.Name);
-                }
-                if (recipient is Phone phoneRecipient)
-                {
-                    checkedListBoxPhones.Items.Add(phoneRecipient.Name);
-                }
-                if (recipient is Channel channelRecipient)
-                {
-                    checkedListBoxChannel.Items.Add(channelRecipient.Name);
-                }
-            }
-        }
-        public void ShowMessage(string Message)
-        {
-            MessageBox.Show(Message);
-        }
 
         public MainForm()
         {
             InitializeComponent();
+        }
 
-            dataGridView.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "Name",
-                DataPropertyName = "Name",
-                HeaderText = "Название канала"
-            });
-            dataGridView.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "Id",
-                DataPropertyName = "Id",
-                HeaderText = "Id канала"
-            });
+        public void UpdateRecipientList(IEnumerable<Recipient> recipients)
+        {
+            checkedListBoxGroups.Items.Clear();
+            checkedListBoxPersons.Items.Clear();
 
-            var presenterRecipient = new PresenterRecipient(new RecipientRepository(),this);
-            var presenterSender = new PresenterSender(new RecipientRepository(), this);
+            foreach (var recipient in recipients)
+            {
+                if (recipient is Group groupRecipient)
+                {
+                    checkedListBoxGroups.Items.Add(groupRecipient.Name);
+                }
+                if (recipient is Person phoneRecipient)
+                {
+                    checkedListBoxPersons.Items.Add(phoneRecipient.Name);
+                }
+            }
         }
 
         private IEnumerable<object> GetCheckedRecipients()
         {
             var result = new List<object>();
 
-            foreach (var item in checkedListBoxChannel.CheckedItems)
-            {
-                result.Add(item);
-            }
-
             foreach (var item in checkedListBoxGroups.CheckedItems)
             {
                 result.Add(item);
             }
 
-            foreach (var item in checkedListBoxPhones.CheckedItems)
+            foreach (var item in checkedListBoxPersons.CheckedItems)
             {
                 result.Add(item);
             }
-
             return result;
         }
 
@@ -117,28 +77,18 @@ namespace Notifier
             }
         }
 
-        private void ButtonAddChannel_Click(object sender, EventArgs e)
+        private async void MainForm_Load(object sender, EventArgs e)
         {
-            try
-            {
-                AddChanged?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error", $"{ex.Message}");
-            }
+            var repository = new RecipientRepository();
+            var presenterSender = new PresenterSender(repository, this);
+            RecipientRepository.RecipientsChanged += Repository_RecipientsChanged;
+            //Вызов комманд
+            await TelegramBot.CommandWorker();
         }
 
-        private void ButtonDeleteChannel_Click(object sender, EventArgs e)
+        private void Repository_RecipientsChanged(object sender, RecipientsEventArgs e)
         {
-            try
-            {
-                RemoveChanged?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error", $"{ex.Message}");
-            }
+            UpdateRecipientList(e.Recipients);
         }
     }
 }

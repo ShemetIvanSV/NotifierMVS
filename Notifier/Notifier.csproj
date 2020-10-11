@@ -52,12 +52,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Forms\IRecipientView.cs" />
+    <Compile Include="Core\Commands\Command.cs" />
+    <Compile Include="Core\Commands\GetIdCommand.cs" />
+    <Compile Include="Core\Commands\UnsubscribleCommand.cs" />
     <Compile Include="Forms\ISenderView.cs" />
-    <Compile Include="Models\DTO\Channel.cs" />
     <Compile Include="Models\DTO\Group.cs" />
-    <Compile Include="Models\DTO\Phone.cs" />
-    <Compile Include="Core\Bot.cs" />
+    <Compile Include="Models\DTO\Person.cs" />
+    <Compile Include="Core\TelegramBot.cs" />
     <Compile Include="Core\TelegramSettings.cs" />
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
@@ -66,7 +67,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\IRecipientRepository.cs" />
-    <Compile Include="Presenters\PresenterRecipient.cs" />
+    <Compile Include="Models\RecipientsEventArgs.cs" />
     <Compile Include="Presenters\PresenterSender.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
